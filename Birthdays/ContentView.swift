@@ -10,9 +10,7 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var friends: [Friend] = [
-        Friend(name: "Kaveri", birthday: .now),
-        Friend(name: "Mya", birthday: Date(timeIntervalSince1970: 0))]
+    @Query private var friends: [Friend]
     @State private var newName = ""
     @State private var newBirthday = Date.now
     
@@ -20,15 +18,21 @@ struct ContentView: View {
     {
         NavigationStack
         {
-            List(friends, id: \.name) { friend in
-                HStack
-                {
-                    Text(friend.name)
-                    Spacer()
-                    Text(friend.birthday, format:.dateTime.month(.wide).day().year())
+            List {
+                ForEach(friends){ friend in
+                    HStack
+                    {
+                        Text(friend.name)
+                        Spacer()
+                        Text(friend.birthday, format:.dateTime.month(.wide).day().year())
+                            .toolbar{
+                                EditButton()
+                            }
+                    }
                 }
+                .onDelete(perform: deleteFriend)
             }
-            .navigationTitle("Happyy Birthdayyy")
+            .navigationTitle("Bday reminder app")
             .safeAreaInset(edge: .bottom)
             {
                 VStack(alignment: .center, spacing: 20)
@@ -50,6 +54,12 @@ struct ContentView: View {
                 }
                 
             }
+        }
+    }
+    private func deleteFriend(at offsets: IndexSet) {
+        for index in offsets {
+            let friendToDelete = friends[index]
+            modelContext.delete(friendToDelete)
         }
     }
 }
